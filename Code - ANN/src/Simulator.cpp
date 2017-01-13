@@ -77,25 +77,23 @@ void* Simulator::runPhysics(){
     while(!HandleGraphics::getScenario()->getQuitStatus()){
         usleep(1000000.f*timeStep/handTime);
 
-        cout << "passou 8" << endl;
+        //cout << "passou scenario 0" << endl;
         if(physics->isRefreshingWorld()){
             continue;
         }
 
-        cout << "passou 9" << endl;
         if(HandleGraphics::getScenario()->getSingleStep() && gameState->sameState){
                         
-            cout << endl << endl << endl;
+            //cout << endl << endl << endl;
             loopBullet++;
-            cout << "--------Ciclo Atual:\t" << loopBullet << "--------" << endl;
+            //cout << "--------Ciclo Atual:\t" << loopBullet << "--------" << endl;
             
             physics->stepSimulation(timeStep,subStep,standStep);
-            cout << "passou 10" << endl;
             gameState->sameState = false;
             runningPhysics = true;
             HandleGraphics::getScenario()->setSingleStep(false);
         }
-        //cout << "passou 9" << endl;
+        //cout << "passou scenario 1" << endl;
 
     }
     return(NULL);
@@ -122,19 +120,17 @@ void* Simulator::runStrategies(){
     //to catch mapVision when openCV is ready
     usleep(200000);
     while(!HandleGraphics::getScenario()->getQuitStatus()){
+        //cout << "passou strategy 0" << endl;
         usleep(1000000.f*timeStep/handTime);
         if(HandleGraphics::getScenario()->getSingleStep()){
             if(!gameState->sameState){
                 //cout << "passou 0" << endl;
                 updateWorld();
 
-                cout << "passou 1" << endl;
                 Map mapReward = physics->getMap();
 
                 bool followPolicy = HandleGraphics::getScenario()->getFollowPolicy();
                 bool saveNet = HandleGraphics::getScenario()->getSaveNetwork();
-
-                cout << "passou 2" << endl;
 
                 if(strategies.size() > 0){
                     btVector3 ballPos = calcRelativePosition(physics->getBallPosition(),strategies[0]->getAttackDir());
@@ -169,18 +165,14 @@ void* Simulator::runStrategies(){
                     }
                 }
 
-                cout << "passou 5" << endl;
-
                 for(int i = 0; i < strategies.size(); i++){
                     if(strategies[i]->agentReachTerminal()){
                         reinitPhysics();
                     }
                 }
-
-                
-                cout << "passou 6" << endl;
                 gameState->sameState = true;
             }
+            //cout << "passou strategy 1" << endl;
         }
     }
     return(NULL);

@@ -106,7 +106,7 @@ bool Physics::verifyWorld(){
 void Physics::reinitWorld(){
     refreshingWorld = true;
     
-    createWorld();
+    //createWorld();
     refreshPositions();
 
     refreshingWorld = false;

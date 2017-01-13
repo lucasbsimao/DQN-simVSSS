@@ -126,6 +126,8 @@ void Scenario::initLight(){
 
 void Scenario::displayEvent(){
 
+	usleep(1000000*1/30.f);
+	//cout << "passou display 0" << endl;
 	if(debugMode == 0){
         glEnable(GL_LIGHTING);
         glClearColor(0.6f, 0.6f, 0.6f, 0.0f);
@@ -162,6 +164,7 @@ void Scenario::displayEvent(){
 	}
 
 	glutSwapBuffers();
+	//cout << "passou display 1" << endl;
 }
 
 Mat Scenario::getSceneOpenCV(){

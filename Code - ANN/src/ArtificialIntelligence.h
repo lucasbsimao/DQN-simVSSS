@@ -11,10 +11,122 @@
 #include "tiny_cnn/tiny_cnn.h"
 #include "tiny_cnn/util/util.h"
 
+#include <iostream>
+#include <stdlib.h>
+#include <stdio.h>
+#include <vector>
+#include <cmath>
+#include <cstdlib>
+#include <assert.h>
+#include <random>
+
+
 using namespace tiny_cnn;
 using namespace tiny_cnn::activation;
 
 using namespace cv;
+
+class Neuron;
+
+typedef vector<Neuron> Layer;
+
+struct ActivationFunc{
+	double virtual activation(double z) = 0;
+	double virtual derivateActivation(double z) = 0;
+};
+
+struct Sigmoid: public ActivationFunc{
+	double activation(double z){
+		double activation = 1/(1+exp(-z));
+		return activation;
+	}
+
+	double derivateActivation(double z){
+		double derivate = z*(1-z);
+		return derivate;
+	}
+};
+
+struct LeakyRelu: public ActivationFunc{
+	double activation(double z){
+		if(z > 0)
+			return z;
+		else
+			return 0.01*z;
+	}
+
+	double derivateActivation(double z){
+		if(z > 0)
+			return 1;
+		else
+			return 0.01;
+	}
+};
+
+struct Identity: public ActivationFunc{
+	double activation(double z){
+		return z;
+	}
+
+	double derivateActivation(double z){
+		return 1;
+	}
+};
+
+struct Connection{
+	double outWeight;
+	double weightGrad;
+	double totalDelta;
+};
+
+class Neuron{
+public:
+	Neuron(int numOutputs, int nodeId, ActivationFunc* function);
+	void feedForward(Layer &prevLayer);
+	ActivationFunc* activationFunc;
+	double sigmoid(double z);
+	double derivateSigmoid(double targetVal);
+	double leakyRelu(double z);
+	double derivateLeakyRelu(double targetVal);
+	double identity(double z);
+	double derivateIdentity();
+	void setOutputValue(double val);
+	double getOutputValue() { return m_output;};
+	vector<Connection> getConnections() { return m_connections; };
+	void setWeights(vector<double> outWeigths);
+	double getDelta() {return m_delta;};
+
+	void calcOutputDelta(double targetVal);
+	void calcHiddenDelta(Layer& nextLayer);
+
+	void updateDeltaWeights(Layer& prevLayer);
+	void update(int m);
+	void setIsBias(bool isBias);
+private:
+	bool isBias;
+	int m_nodeId;
+	double m_delta;
+	double randomWeight(){return rand()/double(RAND_MAX);};
+	double m_output;
+	double m_hypOut;
+	vector<Connection> m_connections;
+};
+
+class NeuralNetwork{
+public:
+    NeuralNetwork(){};
+	NeuralNetwork(vector<int> topology, vector<ActivationFunc*> activations);
+	void feedForward(vector<double> inputVals);
+	void backProp(vector<double> targetVals);
+	void SGD(int miniBatch);
+	vector<double> getResults();
+	double getError() {return m_error; };
+
+	void calcActualError(vector<double> targetVals);
+private:
+	vector<Layer> m_layers;
+	double m_error;
+};
 
 struct GameMemory{
     vec_t oldMapVision;
@@ -52,8 +164,12 @@ private:
     float maxReward;
     float minReward;
 
+    NeuralNetwork myNet;
 
     network<sequential> net;
+	RMSprop mptimizer;
+
+	vec_t imageStd;
 
     int countBuffer;
 
@@ -72,7 +188,6 @@ private:
     int takenAct;
 
     vector<GameMemory> replay; 
-
     
     int calculateActualState(vec_t output);
     float calculateQValue();

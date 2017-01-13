@@ -38,7 +38,7 @@ void Strategy::runStrategy(vector<RobotStrategy*> robotStrategiesTeam, Map mapRe
 
     artInt->setFollowPolicy(followPolicy);
 
-    printMDPState();
+    //printMDPState();
 
     this->robotStrategiesTeam = robotStrategiesTeam;
 
@@ -159,12 +159,12 @@ void Strategy::calculateNextTarget(RobotStrategy* robotStrategy){
 
     mapVision.at(agentX+1).at(agentZ+1) = 1; 
 
-    for(int i= mapVision.size() -1; i >= 0;i--){
+    /*for(int i= mapVision.size() -1; i >= 0;i--){
         for(int j= 0; j < mapVision.at(0).size();j++){
             cout << mapVision.at(i).at(j) << " ";
         }   
         cout << endl;  
-    }
+    }*/
 
     //verifying if is in negative part, because of round in int
     if(robotStrategy->getPosition().getX() < 0) agentX = -1;

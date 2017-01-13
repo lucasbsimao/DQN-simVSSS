@@ -50,6 +50,9 @@
 #ifndef CNN_USE_OMP
 #include <thread>
 #include <future>
+
+#include <iostream>
+using namespace std;
 #endif
 
 #define CNN_UNREFERENCED_PARAMETER(x) (void)(x)
