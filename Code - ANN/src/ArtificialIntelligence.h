@@ -8,8 +8,8 @@
 #include <opencv2/video/tracking.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "tiny_cnn/tiny_cnn.h"
-#include "tiny_cnn/util/util.h"
+#include "tiny_dnn/tiny_dnn.h"
+#include "tiny_dnn/util/util.h"
 
 #include <iostream>
 #include <stdlib.h>
@@ -21,8 +21,8 @@
 #include <random>
 
 
-using namespace tiny_cnn;
-using namespace tiny_cnn::activation;
+using namespace tiny_dnn;
+using namespace tiny_dnn::activation;
 
 using namespace cv;
 
@@ -149,6 +149,8 @@ private:
     Map mapVision;
     vec_t imageInput;
     vec_t prevMapVision;
+	vec_t concatPrevMapVisions;
+	vec_t concatInputMapVisions;
     int generationsRL;
 
     Map prevMDP;
@@ -163,6 +165,8 @@ private:
     float impartialState;
     float maxReward;
     float minReward;
+	float wallReward;
+	float stuckReward;
 
     NeuralNetwork myNet;
 
@@ -187,6 +191,13 @@ private:
     float numEpochs;
     int takenAct;
 
+	vector<float> listErrors;
+	vector<float> listPolicies;
+	float policyValue;
+	int numCopies;
+
+	int nShowError;
+
     vector<GameMemory> replay; 
     
     int calculateActualState(vec_t output);
@@ -197,12 +208,14 @@ private:
     vec_t processImage();
     void processRL();
     int calculateMaxOutput(vec_t output);
+	void showState(vec_t vision);
 
     vector<GameMemory> selectRandomBatch();
 
     void showBestResult();
 
     void constructNet();
+	void initNetwork();
 
 public:
 	ArtificialIntelligence();
@@ -223,6 +236,8 @@ public:
     float getImpartialState() { return impartialState; }
     float getMinReward() { return minReward; }
     float getStdReward() { return stdReward; }
+	float getWallReward() { return wallReward; }
+	float getStuckReward() { return stuckReward; }
 
     void setFollowPolicy(bool followPolicy);
 };

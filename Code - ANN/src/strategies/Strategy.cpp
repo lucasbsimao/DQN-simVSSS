@@ -86,23 +86,30 @@ void Strategy::processMapVision(){
 }
 
 bool Strategy::calculateEnvReward(Map mapReward, int posX, int posZ){
+    bool isTerminalState = false;
 
     if(posX == mapReward.size() || posZ == mapReward.at(0).size() || posX == -1 || posZ == -1){
+        isTerminalState = true;
         this->reward = artInt->getMinReward();
-        return true;
-    }else if(mapReward.at(posX).at(posZ) == 1 || mapReward.at(posX).at(posZ) == 0 || mapReward.at(posX).at(posZ) == 5){
+    }else if(mapReward.at(posX).at(posZ) == 5){
+        this->reward = artInt->getWallReward();
+    }else if(mapReward.at(posX).at(posZ) == 1 || mapReward.at(posX).at(posZ) == 0){
         this->reward = artInt->getStdReward();
-        return false;
     }
     else if(mapReward.at(posX).at(posZ) == 2){
         this->reward = artInt->getMaxReward();
-        return true;
+        isTerminalState = true;
     }else{
         cout << "Verify reward table! It is not returning any state reward." << endl;
     }
 
+    /*if(artInt->getTakenActions() > 200){
+        isTerminalState = true;
+        this->reward = artInt->getStuckReward();
+    }*/
 
-    return true;
+
+    return isTerminalState;
 }
 
 void Strategy::updateStrategiesHistory(){
@@ -144,7 +151,6 @@ void Strategy::printMDPState(){
             listDrawComponents.push_back(drawComp);
         }
     }
-
     drawComponents = listDrawComponents;*/
 }
 
@@ -211,11 +217,12 @@ void Strategy::calculateNextTarget(RobotStrategy* robotStrategy){
 
         actAimTerminal = calculateEnvReward(mapReward, futStateX, futStateZ);
 
-        if(!actAimTerminal){
-            if( mapReward.at(futStateX).at(futStateZ) == 5){
-                futStateX = agentX;
-                futStateZ = agentZ;
-            }
+        if(!actAimTerminal){// ||(actAimTerminal && artInt->getTakenActions() > 200)){
+            //if(!(futStateX == mapReward.size() || futStateZ == mapReward.at(0).size() || futStateX == -1 || futStateZ == -1))
+                if( mapReward.at(futStateX).at(futStateZ) == 5){
+                    futStateX = agentX;
+                    futStateZ = agentZ;
+                }
         }
 
         reachingPoint = true;

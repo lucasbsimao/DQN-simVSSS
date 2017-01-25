@@ -4,13 +4,14 @@ ArtificialIntelligence::ArtificialIntelligence(){
 	accuracy = 0.8;
 	noise = 0.1;
 	discount = 1.0;
-	stdReward = -0.01;
+	stdReward = 0;//-0.05;
 	generationsRL = 0;
 
 	impartialState = -15;
 	maxReward = 1;
-	minReward = -1;
-	wallReward = -0.4;
+	minReward = -0.3;
+	wallReward = -0.075;
+	stuckReward = -0.3;
 	countQ = 0;
 
 	//DQN constants
@@ -18,22 +19,27 @@ ArtificialIntelligence::ArtificialIntelligence(){
 	epoch = 0;
 
 	actualAction = -1;
-
-	epsilon = 1.0f;
+ 
+	epsilon =1.0f;
 	gamma = 0.95;
 
-	batch = 50;
-	buffer = 1500;
+	batch = 40;
+	buffer = 2500;
 	countBuffer = 0;
 	isTerminal = false;
 
 	followPolicy = false;
 
-	numEpochs = 10000;
+	numEpochs = 15000;
 	actReward = 0.0;
+	takenAct = 0;
+	numCopies = 0;
+	policyValue= 0;
+
+	nShowError = 0;
 
 	constructNet();
-	//std::ifstream input("net_backup.txt");
+	//std::ifstream input("net_ostream-0.txt");
 	//net.load(input);
 }
 
@@ -46,36 +52,34 @@ void ArtificialIntelligence::setFollowPolicy(bool followPolicy){
 }
 
 void ArtificialIntelligence::saveNetwork(){
-	std::ofstream file("net_ostream.txt");
-	file << net;
+	stringstream errorFile1;
+	errorFile1 << "net_ostream-" << numCopies << ".txt";
+	std::ofstream file1(errorFile1.str());
+	file1 << net;
 
-	std::ofstream file2("net_backup.txt");
-	net.save(file2);
+	file1.close();
+
+	stringstream errorFile2;
+	errorFile2 << "PoliciesValue-" << numCopies;
+	std::ofstream file2(errorFile2.str());
+	for(int i = 0; i < listPolicies.size(); i++){
+		file2 << listPolicies[i] << ";" << endl;
+	}
+
+	file2.close();
+
+	stringstream errorFile;
+	errorFile << "ErrorList-" << numCopies;
+	std::ofstream file3(errorFile.str());
+	for(int i = 0; i < listErrors.size(); i++){
+		file3 << listErrors[i] << ";" << endl;
+	}
+
+	file3.close();
 }
 
 void ArtificialIntelligence::constructNet() {
-	float input = (SIZE_WIDTH/SCALE_MAP+2)*(SIZE_DEPTH/SCALE_MAP+2);
-
-	typedef convolutional_layer<activation::identity> conv;
-    typedef max_pooling_layer<leaky_relu> pool;
-
-    const int n_fmaps = 32; ///< number of feature maps for upper layer
-    const int n_fmaps2 = 64; ///< number of feature maps for lower layer
-    const int n_fc = 64; ///< number of hidden units in fully-connected layer
-
-    net << fully_connected_layer<relu>(input, 80)
-		<< fully_connected_layer<identity>(80, 4);
-	/*
-	<< convolutional_layer<leaky_relu>((SIZE_WIDTH/SCALE_MAP+2),(SIZE_DEPTH/SCALE_MAP+2),3,1,8, padding::same,true,2,2)
-    	<< convolutional_layer<leaky_relu>(5,5,2,8,10,padding::same,true,2,2)
-		<< fully_connected_layer<identity>(90, 4);
-	*/
-	net.init_weight();
-
-	vector<int>topology;
-	topology.push_back(input);
-	topology.push_back(200);
-	topology.push_back(4);
+	initNetwork();
 
 	vector<ActivationFunc*> activations;
 	ActivationFunc* leakyRelu = new LeakyRelu();
@@ -85,17 +89,36 @@ void ArtificialIntelligence::constructNet() {
 	activations.push_back(identity);
 
 	//myNet = NeuralNetwork(topology, activations);
+}
 
-	for(int i = 0; i < input;i++){
-		imageStd.push_back(1.0);
-	}
+void ArtificialIntelligence::initNetwork(){
+	float input = (SIZE_WIDTH/SCALE_MAP+2)*(SIZE_DEPTH/SCALE_MAP+2)*5;
+
+	net = network<sequential>();
+
+	typedef convolutional_layer<activation::identity> conv;
+    typedef max_pooling_layer<leaky_relu> pool;
+
+    const int n_fmaps = 32; ///< number of feature maps for upper layer
+    const int n_fmaps2 = 64; ///< number of feature maps for lower layer
+    const int n_fc = 64; ///< number of hidden units in fully-connected layer
+
+    net << fully_connected_layer<leaky_relu>(input, 100)
+		<< fully_connected_layer<identity>(100, 4);
 	
+	//net << convolutional_layer<leaky_relu>((SIZE_WIDTH/SCALE_MAP+2),(SIZE_DEPTH/SCALE_MAP+2),3,1,8, padding::valid,true,1,1)
+    //	<< convolutional_layer<leaky_relu>(8,8,3,8,6,padding::valid,true,1,1)
+	//	<< fully_connected_layer<identity>(216, 4);
+
+	net.init_weight();
 }
 
 void ArtificialIntelligence::setMap(Map mapVision, float reward, bool isTerminal){
 	cout << "EPOCH: " << epoch << endl;
 
 	if(takenAct > 0){
+		concatPrevMapVisions.clear();
+		concatPrevMapVisions.insert(concatPrevMapVisions.end(),concatInputMapVisions.begin(),concatInputMapVisions.end());
 		this->isTerminal = isTerminal;
 		this->prevMapVision = vec_t(this->imageInput);
 		actReward = reward;
@@ -124,8 +147,8 @@ vector<GameMemory> ArtificialIntelligence::selectRandomBatch(){
 
 	for(int i = 0; i < batch; i++){
 		int index = rand()%buffer;
-		//cout << "INDEXXXX AAAAHHHH: " << index << endl;
-		batchSelect.push_back(replay.at(index));
+		//cout << "INDEXXXX AAAAHHHH " << i << ":" << index << endl;
+		batchSelect.push_back(replay.at(index)); 
 	}
 
 	return batchSelect;
@@ -134,7 +157,25 @@ vector<GameMemory> ArtificialIntelligence::selectRandomBatch(){
 void ArtificialIntelligence::processRL(){
 	imageInput = processImage();
 
-	vec_t output = net.predict(imageInput);
+	concatInputMapVisions.clear();
+	if(takenAct == 0){
+		concatInputMapVisions.insert(concatInputMapVisions.end(),imageInput.begin(),imageInput.end());
+		concatInputMapVisions.insert(concatInputMapVisions.end(),imageInput.begin(),imageInput.end());
+		concatInputMapVisions.insert(concatInputMapVisions.end(),imageInput.begin(),imageInput.end());
+		concatInputMapVisions.insert(concatInputMapVisions.end(),imageInput.begin(),imageInput.end());
+		concatInputMapVisions.insert(concatInputMapVisions.end(),imageInput.begin(),imageInput.end());
+	}else{
+		concatInputMapVisions.insert(concatInputMapVisions.end(),concatPrevMapVisions.begin()+imageInput.size(),concatPrevMapVisions.end());
+		concatInputMapVisions.insert(concatInputMapVisions.end(),imageInput.begin(),imageInput.end());
+	}
+
+	//cout << "Mapa antigo:" << endl;
+	//showState(concatPrevMapVisions);
+
+	//cout << "Mapa atual:" << endl;
+	//showState(concatInputMapVisions);
+		
+	vec_t output = net.predict(concatInputMapVisions);
 
 	for(int t = 0; t < output.size();t++){
 		string strAct = "";
@@ -155,14 +196,23 @@ void ArtificialIntelligence::processRL(){
 	
 	int prevAction = actualAction;
 	actualAction = calculateActualState(output);
-	cout << "Action: " << actualAction << endl;
-	cout << "Max Action: " << calculateMaxOutput(output) << endl;
+	//cout << "Action: " << actualAction << endl;
+	//cout << "Max Action: " << calculateMaxOutput(output) << endl;
 
-	if(takenAct == 0) return;
+	if(takenAct == 0){
+		if(takenAct == 0 && replay.size() >= buffer ){
+			listPolicies.push_back(policyValue);
+			policyValue = 0;
+			cout << "Policy saved" << endl;
+		}
+		return;
+	} 
+	policyValue += output.at(actualAction);
 
-	cout << "Reward: " << actReward << endl;
-	GameMemory gameMemory(vec_t(prevMapVision),prevAction, actReward, vec_t(imageInput));
+	cout << "Policy: " << policyValue << endl;
+	//cout << "index 1: " << prevMapVision.size() << " " << imageInput.size() << endl;
 
+	GameMemory gameMemory(concatPrevMapVisions,prevAction, actReward, concatInputMapVisions);
 	if(replay.size() < buffer){
 		replay.push_back(gameMemory);
 	}else{
@@ -170,21 +220,8 @@ void ArtificialIntelligence::processRL(){
 
 		//cout << "passou 3" << endl;
 
-		/*bool mismatch = true;
-		for(int i = 0; i < batch; i++){
-			for(int j = 0; j < miniBatch.at(i).newMapVision.size(); j++){
-				cout << miniBatch.at(i).newMapVision.at(j) << " ";
-			}
-			cout << endl;
-			if(i > 0){
-				if(!equal(miniBatch.at(i).newMapVision.begin(), miniBatch.at(i).newMapVision.end(), miniBatch.at(i-1).newMapVision.begin())){
-					mismatch = false;
-				}
-			}
-		}
-		if(!mismatch) cout << "diferentes" << endl;*/
 
-
+		//int sampleIdBatch = 
 		vector<vec_t> inputs_train;
 		vector<vec_t> outputs_train;
 		for(int i = 0; i < batch; i++){
@@ -193,8 +230,13 @@ void ArtificialIntelligence::processRL(){
 			//cout << "index 1: " << i << " " << mem.oldMapVision.size() << " " << mem.newMapVision.size() << endl;
 			vec_t newQ = net.predict(mem.newMapVision);
 			vec_t oldQ = net.predict(mem.oldMapVision);
-			float maxQ = calculateActualState(newQ);
-
+			float maxQ = 0;
+			if(numCopies < 5)
+				maxQ = calculateMaxOutput(newQ);
+			else if(numCopies < 10)
+				maxQ = calculateActualState(newQ);
+			else
+				exit(0);
 			//cout << "index 2: " << i << endl;
 
 			vec_t oldOutputs(oldQ);
@@ -202,29 +244,37 @@ void ArtificialIntelligence::processRL(){
 			//cout << "V(s) = " << mem.reward << " + " << gamma << " * " << newQ.at(maxQ) << endl;
 
 			float stateValue = mem.reward + gamma*newQ.at(maxQ);
-			if(isTerminal)
+			if(isTerminal){
 				stateValue = mem.reward;
-			
+			}
+
+			//cout << "Anterior:" << endl;
+			//showState(mem.oldMapVision);
+			//cout << "Atual:" << endl;
+			//showState(mem.newMapVision);
+
+
 			oldOutputs.at(mem.action) = stateValue;
 
 			inputs_train.push_back(mem.oldMapVision);
 			outputs_train.push_back(oldOutputs);
-
 		}
 
 		cout << "Treinou" << endl;
 
+		if(nShowError == 250){
+			float error = net.get_loss<mse>(inputs_train,outputs_train);
+			listErrors.push_back(error);
+
+			cout << "Error: " << error << endl;
+			nShowError = 0;
+		}else{
+			nShowError++;
+		}
+
+		cout << "Show: " <<  nShowError << endl;
+
 		net.fit<mse>(mptimizer,inputs_train, outputs_train,batch,1);
-
-		//cout << "passou 4" << endl;
-
-		//cout << "passou 3" << endl;
-
-		//RMSprop optimizer; -----------------AQUI
-		//net.fit<mse>(optimizer,inputs_train, outputs_train,batch,1);-=--------------
-		
-		
-		//cout << "passou 4" << endl;
 
 		int indexBuffer = rand()%buffer;
 		replay.at(indexBuffer) = gameMemory;
@@ -236,6 +286,17 @@ void ArtificialIntelligence::processRL(){
 			//std::ofstream output("nets.txt");
 			//output << net;
 		//}
+		
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		if(epsilon < 0.1 && isTerminal){
+			cout << "Reiniciou aqui" << endl;
+			//constructNet();
+		    //epsilon = 1.0;
+			saveNetwork();
+			//numCopies++;
+			//listErrors.clear();
+			//listPolicies.clear();
+		}
 	}
 }
 
@@ -273,6 +334,23 @@ vec_t ArtificialIntelligence::processImage(){
 	}
 
 	return inputNet;
+}
+
+void ArtificialIntelligence::showState(vec_t vision){
+	int numIterations = vision.size()/imageInput.size();
+	int genIndex = 0;
+
+	for(int w = 0; w < numIterations; w++){
+		for(int i= mapVision.size() -1; i >= 0;i--){
+			for(int j= 0; j < mapVision.at(0).size();j++){
+				float_t index = vision.at(genIndex);
+				printf("%.1f ", index);
+				genIndex++;
+			}   
+			cout << endl;  
+		}
+		cout << endl; 
+	}
 }
 
 bool ArtificialIntelligence::reachDeepState(){
