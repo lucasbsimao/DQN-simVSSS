@@ -347,7 +347,7 @@ void Physics::createWorld(){
     gameWidth = SIZE_WIDTH/SCALE_MAP;
     gameDepth = SIZE_DEPTH/SCALE_MAP;
 
-    int numObstacles = 5;//gameWidth*gameDepth/6.5; 
+    int numObstacles = 1;//gameWidth*gameDepth/6.5; 
 
     int typeMap = rand()%4;
 

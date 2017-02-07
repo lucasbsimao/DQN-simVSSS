@@ -102,7 +102,7 @@ struct adagrad : public stateful_optimizer<1> {
  * Lecture 6.5 - rmsprop, COURSERA: Neural Networks for Machine Learning (2012)
  **/
 struct RMSprop : public stateful_optimizer<1> {
-    RMSprop() : alpha(float_t(0.0000001)), mu(float_t(0.95)), eps(float_t(1e-8)) {}
+    RMSprop() : alpha(float_t(0.000001)), mu(float_t(0.95)), eps(float_t(1e-8)) {}
 
     void update(const vec_t& dW, vec_t& W, bool parallelize) {
         vec_t& g = get<0>(W);
@@ -127,11 +127,11 @@ struct RMSprop : public stateful_optimizer<1> {
  * 
  */
 struct adam : public stateful_optimizer<2> {
-    adam() : alpha(float_t(0.001)),
-             b1(float_t(0.9)),
-             b2(float_t(0.999)),
-             b1_t(float_t(0.9)),
-             b2_t(float_t(0.999)),
+    adam() : alpha(float_t(0.000001)),
+             b1(float_t(0.95)),
+             b2(float_t(0.95)),
+             b1_t(float_t(0.95)),
+             b2_t(float_t(0.95)),
              eps(float_t(1e-8)) {}
 
     void update(const vec_t& dW, vec_t& W, bool parallelize) {

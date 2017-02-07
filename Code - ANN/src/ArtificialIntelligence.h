@@ -133,8 +133,9 @@ struct GameMemory{
     int action;
     float reward;
     vec_t newMapVision;
+	bool isTerminal;
 
-    GameMemory(vec_t mv, int ac, float r, vec_t nMV):oldMapVision(mv),action(ac),reward(r),newMapVision(nMV){
+	GameMemory(vec_t mv, int ac, float r, vec_t nMV, bool isT):oldMapVision(mv),action(ac),reward(r),newMapVision(nMV),isTerminal(isT){
 
     }
 };
@@ -145,6 +146,7 @@ private:
     int gameWidth;
 
     int countQ;
+	int countRG;
 
     Map mapVision;
     vec_t imageInput;
@@ -171,7 +173,7 @@ private:
     NeuralNetwork myNet;
 
     network<sequential> net;
-	RMSprop mptimizer;
+	adam mptimizer;
 
 	vec_t imageStd;
 
@@ -186,6 +188,7 @@ private:
     int batch;
     float gamma;
     int buffer;
+	int priorBuffer;
 
     int epoch;
     float numEpochs;
@@ -199,6 +202,7 @@ private:
 	int nShowError;
 
     vector<GameMemory> replay; 
+	vector<GameMemory> priorReplay;
     
     int calculateActualState(vec_t output);
     float calculateQValue();

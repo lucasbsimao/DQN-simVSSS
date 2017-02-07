@@ -89,7 +89,7 @@ bool Strategy::calculateEnvReward(Map mapReward, int posX, int posZ){
     bool isTerminalState = false;
 
     if(posX == mapReward.size() || posZ == mapReward.at(0).size() || posX == -1 || posZ == -1){
-        isTerminalState = true;
+        //isTerminalState = true;
         this->reward = artInt->getMinReward();
     }else if(mapReward.at(posX).at(posZ) == 5){
         this->reward = artInt->getWallReward();
@@ -219,10 +219,14 @@ void Strategy::calculateNextTarget(RobotStrategy* robotStrategy){
 
         if(!actAimTerminal){// ||(actAimTerminal && artInt->getTakenActions() > 200)){
             //if(!(futStateX == mapReward.size() || futStateZ == mapReward.at(0).size() || futStateX == -1 || futStateZ == -1))
-                if( mapReward.at(futStateX).at(futStateZ) == 5){
-                    futStateX = agentX;
-                    futStateZ = agentZ;
-                }
+            if((futStateX == mapReward.size() || futStateZ == mapReward.at(0).size() || futStateX == -1 || futStateZ == -1)){
+                futStateX = agentX;
+                futStateZ = agentZ;
+            }
+            if( mapReward.at(futStateX).at(futStateZ) == 5){
+                futStateX = agentX;
+                futStateZ = agentZ;
+            }
         }
 
         reachingPoint = true;

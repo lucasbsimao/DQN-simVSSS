@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "*h*h*h*h*hpp*h*h*h*h*h*h*h*h*h*hinitializer_list": "cpp",
+        "*h*h*h*hpp*hpp*hpp*hpp*hpp*hpp*hpp*hpp*hpp*hppslist": "cpp",
+        "*h*h*h*h*h*h*h*h*h*h*hpp*hpp*hpp*hpp*hpp*hpp*hpp*hpp*hpp*hpp*hppslist": "cpp",
+        "slist": "cpp",
+        "iosfwd": "cpp"
+    }
+}

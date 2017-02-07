@@ -23,7 +23,7 @@
 *.lib
 
 # Junk files
-*.vscode
+*.vscode/*
 *.pb.cc
 *.pb.h
 
