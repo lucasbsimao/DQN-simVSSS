@@ -3,15 +3,15 @@
 ArtificialIntelligence::ArtificialIntelligence(){
 	accuracy = 0.8;
 	noise = 0.1;
-	discount = 1.0;
-	stdReward = -0.01;
+ 	discount = 1.0;
+	stdReward = 0;
 	generationsRL = 0;
 
 	impartialState = -15;
-	maxReward = 1.5;
-	minReward = stdReward;
-	wallReward = -0.5;
-	stuckReward = -0.3;
+	maxReward = 1;
+	minReward = -1;
+	wallReward = -0.25;
+	stuckReward = -200;
 	countQ = 0;
 	countRG = 0;
 
@@ -24,24 +24,25 @@ ArtificialIntelligence::ArtificialIntelligence(){
 	epsilon =1.0f;
 	gamma = 0.95;
 
-	batch = 40;
-	buffer = 2500;
+	batch = 50;
+	buffer = 10000;
 	priorBuffer = 5;
 	countBuffer = 0;
 	isTerminal = false;
 
 	followPolicy = false;
 
-	numEpochs = 20000;
+	numEpochs = 30000;
 	actReward = 0.0;
 	takenAct = 0;
 	numCopies = 0;
 	policyValue= 0;
 
-	nShowError = 0;
+	nShowError = 30;
+	netError = 0;
 
 	constructNet();
-	//std::ifstream input("net_ostream-0.txt");
+	//std::ifstream input("net_ostream-4.txt");
 	//net.load(input);
 }
 
@@ -98,19 +99,85 @@ void ArtificialIntelligence::initNetwork(){
 
 	net = network<sequential>();
 
-	typedef convolutional_layer<activation::identity> conv;
-    typedef max_pooling_layer<leaky_relu> pool;
+	/*switch(numCopies){
+		case 0:{*/
+			net << fully_connected_layer<leaky_relu>(input, 150)
+			<< fully_connected_layer<leaky_relu>(150, 150)
+			<< fully_connected_layer<identity>(150, 4);
+		/*}break;
+		case 1:{
+			net << fully_connected_layer<leaky_relu>(input, 140)
+			<< fully_connected_layer<leaky_relu>(140, 140)
+			<< fully_connected_layer<identity>(140, 4);
+		}break;
+		case 2:{
+			net << fully_connected_layer<leaky_relu>(input, 165)
+			<< fully_connected_layer<leaky_relu>(165, 150)
+			<< fully_connected_layer<identity>(150, 4);
+		}break;
+		case 3:{
+			net << fully_connected_layer<leaky_relu>(input, 150)
+			<< fully_connected_layer<leaky_relu>(150, 200)
+			<< fully_connected_layer<identity>(200, 4);
+		}break;
+		case 4:{
+			net << fully_connected_layer<leaky_relu>(input, 200)
+			<< fully_connected_layer<leaky_relu>(200, 150)
+			<< fully_connected_layer<identity>(150, 4);
+		}break;
+		case 5:{
+			net << fully_connected_layer<leaky_relu>(input, 174)
+			<< fully_connected_layer<identity>(174, 4);
+		}break;
+		case 6:{
+			net << fully_connected_layer<leaky_relu>(input, 120)
+			<< fully_connected_layer<identity>(120, 4);
+		}break;
+		case 7:{
+			net << fully_connected_layer<leaky_relu>(input, 100)
+			<< fully_connected_layer<leaky_relu>(100, 4);
+		}break;
+		case 8:{
+			net << fully_connected_layer<leaky_relu>(input, 100)
+			<< fully_connected_layer<leaky_relu>(100, 150)
+			<< fully_connected_layer<identity>(150, 4);
+		}break;
+		case 9:{
+			net << fully_connected_layer<leaky_relu>(input, 150)
+			<< fully_connected_layer<leaky_relu>(150, 100)
+			<< fully_connected_layer<identity>(100, 4);
+		}break;
+		case 10:{
+			net << fully_connected_layer<leaky_relu>(input, 150)
+			<< fully_connected_layer<leaky_relu>(150, 125)
+			<< fully_connected_layer<identity>(125, 4);
+		}break;
+		case 11:{
+			net << fully_connected_layer<leaky_relu>(input, 165)
+			<< fully_connected_layer<identity>(165, 4);
+		}break;
+		case 12:{
+			net << fully_connected_layer<leaky_relu>(input, 200)
+			<< fully_connected_layer<identity>(200, 4);
+		}break;
+		case 13:{
+			net << fully_connected_layer<leaky_relu>(input, 80)
+			<< fully_connected_layer<leaky_relu>(80, 165)
+			<< fully_connected_layer<identity>(165, 4);
+		}break;
 
-    const int n_fmaps = 32; ///< number of feature maps for upper layer
-    const int n_fmaps2 = 64; ///< number of feature maps for lower layer
-    const int n_fc = 64; ///< number of hidden units in fully-connected layer
-
-    net << fully_connected_layer<relu>(input, 100)
-		<< fully_connected_layer<identity>(100, 4);
-	
-	//net << convolutional_layer<leaky_relu>((SIZE_WIDTH/SCALE_MAP+2),(SIZE_DEPTH/SCALE_MAP+2),3,1,8, padding::valid,true,1,1)
-    //	<< convolutional_layer<leaky_relu>(8,8,3,8,6,padding::valid,true,1,1)
-	//	<< fully_connected_layer<identity>(216, 4);
+	}*/
+	/*if(numCopies < 2){
+		net << convolutional_layer<leaky_relu>((SIZE_WIDTH/SCALE_MAP+2)*4,(SIZE_DEPTH/SCALE_MAP+2),3,1,10, padding::valid,true,1,1)
+			<< convolutional_layer<leaky_relu>(38,8,3,10,10,padding::valid,true,1,1)
+			<< convolutional_layer<leaky_relu>(36,6,3,10,10,padding::valid,true,2,2)
+			<< fully_connected_layer<identity>(340, 4);
+		
+	}else{
+		net << fully_connected_layer<leaky_relu>(input, 165)
+			<< fully_connected_layer<leaky_relu>(165, 165)
+			<< fully_connected_layer<identity>(165, 4);
+	}*/
 
 	net.init_weight();
 }
@@ -149,19 +216,19 @@ vector<GameMemory> ArtificialIntelligence::selectRandomBatch(){
 
 	for(int i = 0; i < batch; i++){
 		
-		float percPrior = ((rand()%100))/100.f;
+		//float percPrior = ((rand()%100))/100.f;
 		//cout << "INDEXXXX AAAAHHHH " << i << ":" << percPrior << endl;
-		if(percPrior < 0.15){
+		/*if(percPrior < 0.1){
 			//cout << "TESTE " << priorReplay.size() << endl;
 			int index = rand()%((int)priorReplay.size());
 			//cout << "INDEX AHHH: " << index << endl;
 			//cout << "MEM R: " << priorReplay.at(index).reward << endl;
 			batchSelect.push_back(priorReplay.at(index)); 
 		}
-		else{
+		else{*/
 			int index = rand()%buffer;
 			batchSelect.push_back(replay.at(index)); 
-		}
+		//}
 	}
 
 	return batchSelect;
@@ -211,9 +278,8 @@ void ArtificialIntelligence::processRL(){
 	actualAction = calculateActualState(output);
 	//cout << "Action: " << actualAction << endl;
 	//cout << "Max Action: " << calculateMaxOutput(output) << endl;
-
 	if(takenAct == 0){
-		if(takenAct == 0 && replay.size() >= buffer ){
+		if(replay.size() >= buffer ){
 			listPolicies.push_back(policyValue);
 			policyValue = 0;
 			cout << "Policy saved" << endl;
@@ -228,21 +294,26 @@ void ArtificialIntelligence::processRL(){
 	/*cout << "Anterior:" << endl;
 	showState(concatPrevMapVisions);
 	cout << "Atual:" << endl;
-	showState(concatInputMapVisions);
-	cout << "R: " << actReward << endl;
-	cout << "ACT: " << prevAction << endl;*/
-
-	GameMemory gameMemory(concatPrevMapVisions,prevAction, actReward, concatInputMapVisions, isTerminal);
+	showState(concatInputMapVisions);*/
+	//cout << "R: " << actReward << endl;
+	//cout << "ACT: " << prevAction << endl;
+	bool sameState = false;
+	if(equal(concatInputMapVisions.begin(),concatInputMapVisions.end(),concatPrevMapVisions.begin())){
+		cout << "MESMO ESTADO" << endl;
+		sameState=true;
+	} 
 	
-	if(replay.size() < buffer || priorReplay.size() < 1){
+	bool memIsTerminal = actReward == stdReward ? false : true; 
+	GameMemory gameMemory(concatPrevMapVisions,prevAction, actReward, concatInputMapVisions, memIsTerminal);
+	
+	if(replay.size() < buffer){// || priorReplay.size() < 1){
 
-		replay.push_back(gameMemory);
-		if(actReward < maxReward){ 
-			if(replay.size() < buffer)
-				replay.push_back(gameMemory);
-		}else {
+		//replay.push_back(gameMemory);
+		//if(actReward < maxReward){ 
+			replay.push_back(gameMemory);
+		/*}else {
 			priorReplay.push_back(gameMemory);
-		}
+		}*/
 	}else{
 		//cout << "passou 2" << endl;
 		vector<GameMemory> miniBatch = selectRandomBatch();
@@ -267,14 +338,18 @@ void ArtificialIntelligence::processRL(){
 
 			vec_t oldOutputs(oldQ);
 
-			cout << "V(s) = " << mem.reward << " + " << gamma << " * " << newQ.at(maxQ) << endl;
+			//cout << "V(s) = " << mem.reward << " + " << gamma << " * " << newQ.at(maxQ) << endl;
 
 			float stateValue = 0;
+			cout << "R: ";
 			if(mem.isTerminal){
 				stateValue = mem.reward;
+				cout << mem.reward;
 			}else{
 				stateValue = mem.reward + gamma*newQ.at(maxQ);
+				cout << mem.reward << " + " << gamma << "*" << newQ.at(maxQ);
 			}
+			cout << endl;
 
 			/*cout << "Anterior:" << endl;
 			showState(mem.oldMapVision);
@@ -289,30 +364,32 @@ void ArtificialIntelligence::processRL(){
 			outputs_train.push_back(oldOutputs);
 		}
 
-		if(nShowError == 250){
-			float error = net.get_loss<mse>(inputs_train,outputs_train);
-			listErrors.push_back(error);
+		if(nShowError == 30){
+			netError = net.get_loss<mse>(inputs_train,outputs_train);
+			listErrors.push_back(netError);
 
-			cout << "Error: " << error << endl;
 			nShowError = 0;
 		}else{
 			nShowError++;
 		}
 
-		cout << "Show: " <<  nShowError << endl;
+		cout << "Error: " << netError << endl;
 
 		net.fit<mse>(mptimizer,inputs_train, outputs_train,batch,1);
 
-		if(actReward <= 0){
-			int indexBuffer = rand()%buffer;
-			replay.at(indexBuffer) = gameMemory;
-		}else{
-			if(priorReplay.size() < priorBuffer){
-				priorReplay.push_back(gameMemory);
-			}else{
-				int indexBuffer = rand()%priorBuffer;
-				priorReplay.at(indexBuffer) = gameMemory;
-			}
+		if(!sameState){
+			//cout << "Computei" << endl;
+			//if(actReward < maxReward){
+				int indexBuffer = rand()%buffer;
+				replay.at(indexBuffer) = gameMemory;
+			/*}else{
+				if(priorReplay.size() < priorBuffer){
+					priorReplay.push_back(gameMemory);
+				}else{
+					int indexBuffer = rand()%priorBuffer;
+					priorReplay.at(indexBuffer) = gameMemory;
+				}
+			}*/
 		}
 
 		epsilon -= 1.0f/numEpochs;
@@ -324,14 +401,15 @@ void ArtificialIntelligence::processRL(){
 		//}
 		
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		if(epsilon < 0.1 && isTerminal){
+		if(epsilon < 0.1){
 			cout << "Reiniciou aqui" << endl;
-			//constructNet();
-		    //epsilon = 1.0;
+		    epsilon = 1.0;
 			saveNetwork();
-			//numCopies++;
-			//listErrors.clear();
-			//listPolicies.clear();
+			constructNet();
+			numCopies++;
+			listErrors.clear();
+			listPolicies.clear();
+			replay.clear();
 		}
 	}
 }
@@ -352,23 +430,34 @@ vec_t ArtificialIntelligence::processImage(){
 			switch(index){
 				case 0:{
 					inputNet.push_back(1.0f);
-					inputNet.push_back(0.75f);
+					inputNet.push_back(1.0f);
+					//inputNet.push_back(0.75f);
+					//inputNet.push_back(0.75f);
 				}break;
 				case 1:{
-					inputNet.push_back(0.8);
-					inputNet.push_back(0.2);
+					inputNet.push_back(0.8f);
+					//inputNet.push_back(0.8);
+					//inputNet.push_back(0.5);
+					inputNet.push_back(0.5);
 				}break;
 				case 2:{
-					inputNet.push_back(0.5);
-					inputNet.push_back(0.35);
+					inputNet.push_back(0.6f);
+					//inputNet.push_back(0.9);
+					//inputNet.push_back(0.25);
+					inputNet.push_back(0.9);
 				}break;
 				case 5:{
-					inputNet.push_back(0.2);
-					inputNet.push_back(0.2);
+					inputNet.push_back(0.4f);
+					inputNet.push_back(1.0f);
+					//inputNet.push_back(0.3);
+					//inputNet.push_back(0.7);
+					//inputNet.push_back(0.7);
 				}break;
 				case 8:{
-					inputNet.push_back(0.6);
+					inputNet.push_back(0.2f);
+					//inputNet.push_back(1.0);
 					inputNet.push_back(0.7);
+					//inputNet.push_back(1.0);
 				}break;
 			}
 		}

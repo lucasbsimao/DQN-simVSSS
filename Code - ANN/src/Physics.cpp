@@ -70,7 +70,7 @@ void Physics::registBodies(){
                 addWall(Color(0,0,0),btVector3(i*SCALE_MAP+SCALE_MAP/2,2.5,j*SCALE_MAP+SCALE_MAP/2),7,5,7,0);
             }
             if(map.at(i).at(j) == 2){
-                addBall(2.5,btVector3(i*SCALE_MAP+SCALE_MAP/2,2.5,j*SCALE_MAP+SCALE_MAP/2),0.08);
+                addBall(1.0,btVector3(i*SCALE_MAP+SCALE_MAP/2,2.5,j*SCALE_MAP+SCALE_MAP/2),0.08);
             }
         }
     }
@@ -347,7 +347,7 @@ void Physics::createWorld(){
     gameWidth = SIZE_WIDTH/SCALE_MAP;
     gameDepth = SIZE_DEPTH/SCALE_MAP;
 
-    int numObstacles = 1;//gameWidth*gameDepth/6.5; 
+    int numObstacles = 3;//gameWidth*gameDepth/6.5; 
 
     int typeMap = rand()%4;
 

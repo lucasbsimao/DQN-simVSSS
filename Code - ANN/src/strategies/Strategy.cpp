@@ -217,7 +217,7 @@ void Strategy::calculateNextTarget(RobotStrategy* robotStrategy){
 
         actAimTerminal = calculateEnvReward(mapReward, futStateX, futStateZ);
 
-        if(!actAimTerminal){// ||(actAimTerminal && artInt->getTakenActions() > 200)){
+        if(!actAimTerminal){// || (actAimTerminal && artInt->getTakenActions() > 200)){
             //if(!(futStateX == mapReward.size() || futStateZ == mapReward.at(0).size() || futStateX == -1 || futStateZ == -1))
             if((futStateX == mapReward.size() || futStateZ == mapReward.at(0).size() || futStateX == -1 || futStateZ == -1)){
                 futStateX = agentX;

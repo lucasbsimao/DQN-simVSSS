@@ -17,7 +17,7 @@ EXEC = DQN
 
 
 .cpp.o: $(SRC) $(UTILS) $(SOURCES)
-	$(CC) -c $(INCLUDES) $(LIBRARIES) -Wall -ffast-math -o $@ $< -w
+	$(CC) -c $(INCLUDES) $(LIBRARIES) -Wall -ffast-math -o $@ $< -w 
 
 all: $(EXEC)
 	@echo Executando... Aguarde.

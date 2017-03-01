@@ -173,7 +173,7 @@ private:
     NeuralNetwork myNet;
 
     network<sequential> net;
-	adam mptimizer;
+	RMSprop mptimizer;
 
 	vec_t imageStd;
 
@@ -198,6 +198,7 @@ private:
 	vector<float> listPolicies;
 	float policyValue;
 	int numCopies;
+	float netError;
 
 	int nShowError;
 
