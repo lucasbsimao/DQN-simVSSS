@@ -1,0 +1,9 @@
+// Place your settings in this file to overwrite default and user settings.
+{
+    "editor.minimap.enabled": true,
+    "files.associations": {
+        "slist": "cpp",
+        "initializer_list": "cpp",
+        "thread": "cpp"
+    }
+}

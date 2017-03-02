@@ -430,10 +430,10 @@ void Scenario::renderFloor(BulletObject* btObj)
 	glPushMatrix();
 		glMultMatrixf(mat);
 		glBegin(GL_QUADS);
-			glVertex3f(-10,0.0,SIZE_DEPTH+10);
-			glVertex3f(-10,0.0,-10);
-			glVertex3f(SIZE_WIDTH+10,0.0,-10);
-			glVertex3f(SIZE_WIDTH+10,0.0,SIZE_DEPTH+10);
+			glVertex3f(0,0.0,SIZE_DEPTH+20);
+			glVertex3f(0,0.0,0);
+			glVertex3f(SIZE_WIDTH+20,0.0,0);
+			glVertex3f(SIZE_WIDTH+20,0.0,SIZE_DEPTH+20);
 		glEnd();
 	glPopMatrix();
 }

@@ -61,8 +61,8 @@ void Physics::registBodies(){
     btVector3 posTeam2[] = {btVector3(SIZE_WIDTH-15,4,55),btVector3(SIZE_WIDTH-25,4,SIZE_DEPTH - SIZE_DEPTH/2.5 + 20),btVector3(SIZE_WIDTH-55,4,85)};
     //Create robots here
     //Team 1
-    for(int i = 0;i < gameDepth;i++){
-        for(int j = 0;j < gameWidth;j++){
+    for(int i = 0;i < map.size();i++){
+        for(int j = 0;j < map.at(0).size();j++){
             if(map.at(i).at(j) == 1){
                 addRobot(Color(0.9,0.9,0.9),btVector3(i*SCALE_MAP+SCALE_MAP/2,2,j*SCALE_MAP+SCALE_MAP/2),btVector3(0,90,0),8,0.25,Color(1,0,0),Color(1.0,1.0,0));
             }
@@ -74,7 +74,6 @@ void Physics::registBodies(){
             }
         }
     }
-
     //addWall(Color(0,0,0),btVector3(SIZE_WIDTH/2,7.5,-5),SIZE_WIDTH,15,10,0);
     //addWall(Color(0,0,0),btVector3(SIZE_WIDTH/2,7.5,SIZE_DEPTH+5),SIZE_WIDTH,15,10,0);
     //addWall(Color(0,0,0),btVector3(-5,7.5,SIZE_DEPTH/2),10,15,SIZE_DEPTH,0);
@@ -105,7 +104,6 @@ bool Physics::verifyWorld(){
 
 void Physics::reinitWorld(){
     refreshingWorld = true;
-    
     //createWorld();
     refreshPositions();
 
@@ -131,8 +129,8 @@ void Physics::refreshPositions(){
 
     int wall = 0;
 
-    for(int i = 0;i < gameDepth;i++){
-        for(int j = 0;j < gameWidth;j++){
+    for(int i = 0;i < map.size();i++){
+        for(int j = 0;j < map.at(0).size();j++){
             if(map.at(i).at(j) == 1){
                 repositioningBody(robotBody, i, j);
             }
@@ -400,12 +398,27 @@ void Physics::createWorld(){
         }
     }*/
 
+    Map mapEdge;
+    for(int i = 0; i < map.size()+2;i++){
+        vector<float> row;
+        for(int j = 0; j < map.at(0).size()+2;j++){
+            if(i == 0 || i == map.size()+1 || j == map.at(0).size()+1 || j == 0)
+                row.push_back(8);
+            else
+                row.push_back(map.at(i-1).at(j-1));
+            
+        }
+        mapEdge.push_back(row);
+    }
+
+    map = mapEdge;
+
     cout <<"^ X "<< endl;
     cout <<"| "<< endl;
     cout <<"| "<< endl;
-    for(int i= gameDepth -1; i >= 0;i--){
+    for(int i= map.size() -1; i >= 0;i--){
         cout << "| ";
-        for(int j= 0; j < gameWidth;j++){
+        for(int j= 0; j < map.at(0).size();j++){
             cout << map.at(i).at(j) << " ";
         }   
         cout << endl;  

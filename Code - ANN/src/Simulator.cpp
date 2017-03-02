@@ -25,6 +25,7 @@ void Simulator::runSimulator(int argc, char *argv[], ModelStrategy *stratBlueTea
 		exit(1);
 	}
 
+    
 	initWorld();
 	HandleGraphics::initGraphics(physics,strategies,argc,argv);
     
@@ -103,14 +104,13 @@ void* Simulator::runStrategies(){
     btVector3 posTargets[] = {btVector3(SIZE_WIDTH,0,SIZE_DEPTH/2),btVector3(0,0,SIZE_DEPTH/2)};
     int attackDir = 0;
     int framesSec = (int)(1/timeStep);
-
     
     for(int i = 0; i < physics->getNumTeams();i++){
         if(posTargets[i].getX() > 0)  attackDir = 1;
         else attackDir = -1;
         strategies[i]->setAttackDir(attackDir);
         strategies[i]->setFramesSec(framesSec);
-
+        
         for(int j = 0; j < numRobotsTeam;j++){
             int id = i*numRobotsTeam + j;
             physics->getAllRobots()[id]->setTimeStep(timeStep);
@@ -124,7 +124,7 @@ void* Simulator::runStrategies(){
         usleep(1000000.f*timeStep/handTime);
         if(HandleGraphics::getScenario()->getSingleStep()){
             if(!gameState->sameState){
-                //cout << "passou 0" << endl;
+               
                 updateWorld();
 
                 Map mapReward = physics->getMap();

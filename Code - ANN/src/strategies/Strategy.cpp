@@ -29,11 +29,10 @@ Strategy::~Strategy(){
     strategyHistory.clear();
 }
 
-void Strategy::runStrategy(vector<RobotStrategy*> robotStrategiesTeam, Map mapReward, bool followPolicy, bool saveNet){
+void Strategy::runStrategy(vector<RobotStrategy*> robotStrategiesTeam, Map mapVision, bool followPolicy, bool saveNet){
     deltaTime = float( clock () - begin_time ) /  CLOCKS_PER_SEC;
     begin_time = clock();
 
-    
     if(saveNet) artInt->saveNetwork();
 
     artInt->setFollowPolicy(followPolicy);
@@ -42,7 +41,7 @@ void Strategy::runStrategy(vector<RobotStrategy*> robotStrategiesTeam, Map mapRe
 
     this->robotStrategiesTeam = robotStrategiesTeam;
 
-    this->mapReward = mapReward;
+    this->mapVision = mapVision;
 
     processMapVision();
 
@@ -66,47 +65,33 @@ void Strategy::reinitStrategy(){
 }
 
 void Strategy::processMapVision(){
-    Map mapVision;
-    for(int i = 0; i < mapReward.size()+2;i++){
-        vector<float> row;
-        for(int j = 0; j < mapReward.at(0).size()+2;j++){
-            if(i == 0 || i == mapReward.size()+1 || j == mapReward.at(0).size()+1 || j == 0)
-                row.push_back(8);
-            else
-                if(mapReward.at(i-1).at(j-1) == 1)
-                    row.push_back(0);
-                else
-                    row.push_back(mapReward.at(i-1).at(j-1));
-            
+    for(int i = 0; i < mapVision.size();i++){
+        for(int j = 0; j < mapVision.at(0).size();j++){
+            if(mapVision.at(i).at(j) == 1 ) mapVision.at(i).at(j) = 0;
         }
-        mapVision.push_back(row);
     }
-
-    this->mapVision = mapVision;
 }
 
-bool Strategy::calculateEnvReward(Map mapReward, int posX, int posZ){
+bool Strategy::calculateEnvReward(Map mapVision, int posX, int posZ){
     bool isTerminalState = false;
 
-    if(posX == mapReward.size() || posZ == mapReward.at(0).size() || posX == -1 || posZ == -1){
-        //isTerminalState = true;
+    if(mapVision.at(posX).at(posZ) == 8){
         this->reward = artInt->getMinReward();
-    }else if(mapReward.at(posX).at(posZ) == 5){
+    }else if(mapVision.at(posX).at(posZ) == 5){
         this->reward = artInt->getWallReward();
-    }else if(mapReward.at(posX).at(posZ) == 1 || mapReward.at(posX).at(posZ) == 0){
+    }else if(mapVision.at(posX).at(posZ) == 1 || mapVision.at(posX).at(posZ) == 0){
         this->reward = artInt->getStdReward();
-    }
-    else if(mapReward.at(posX).at(posZ) == 2){
+    }else if(mapVision.at(posX).at(posZ) == 2){
         this->reward = artInt->getMaxReward();
         isTerminalState = true;
     }else{
         cout << "Verify reward table! It is not returning any state reward." << endl;
     }
 
-    /*if(artInt->getTakenActions() > 200){
+    if(artInt->getTakenActions() > 150){
         isTerminalState = true;
         this->reward = artInt->getStuckReward();
-    }*/
+    }
 
 
     return isTerminalState;
@@ -163,14 +148,7 @@ void Strategy::calculateNextTarget(RobotStrategy* robotStrategy){
     int agentX = robotStrategy->getPosition().getX()/SCALE_MAP;
     int agentZ = robotStrategy->getPosition().getZ()/SCALE_MAP;
 
-    mapVision.at(agentX+1).at(agentZ+1) = 1; 
-
-    /*for(int i= mapVision.size() -1; i >= 0;i--){
-        for(int j= 0; j < mapVision.at(0).size();j++){
-            cout << mapVision.at(i).at(j) << " ";
-        }   
-        cout << endl;  
-    }*/
+    mapVision.at(agentX).at(agentZ) = 1; 
 
     //verifying if is in negative part, because of round in int
     if(robotStrategy->getPosition().getX() < 0) agentX = -1;
@@ -205,7 +183,7 @@ void Strategy::calculateNextTarget(RobotStrategy* robotStrategy){
                 futStateZ = agentZ - 1;
             }break;
         }
-
+        
         //Guarantees that terminal states will affect backpropagation
         if(actAimTerminal){
             if(!reachTerminal){
@@ -215,15 +193,14 @@ void Strategy::calculateNextTarget(RobotStrategy* robotStrategy){
             }
         }
 
-        actAimTerminal = calculateEnvReward(mapReward, futStateX, futStateZ);
-
-        if(!actAimTerminal){// || (actAimTerminal && artInt->getTakenActions() > 200)){
-            //if(!(futStateX == mapReward.size() || futStateZ == mapReward.at(0).size() || futStateX == -1 || futStateZ == -1))
-            if((futStateX == mapReward.size() || futStateZ == mapReward.at(0).size() || futStateX == -1 || futStateZ == -1)){
+        actAimTerminal = calculateEnvReward(mapVision, futStateX, futStateZ);
+    
+        if(!actAimTerminal || (actAimTerminal && artInt->getTakenActions() > 150)){
+            if(mapVision.at(futStateX).at(futStateZ) == 8){
                 futStateX = agentX;
                 futStateZ = agentZ;
             }
-            if( mapReward.at(futStateX).at(futStateZ) == 5){
+            if( mapVision.at(futStateX).at(futStateZ) == 5){
                 futStateX = agentX;
                 futStateZ = agentZ;
             }
