@@ -9,11 +9,11 @@ The DQN algorithm is an attempt to achieve the goal of beat high-human levens in
 enter the raw of pixels present in screen to a neural network, and its the backprop is made by correcting rewards in each taken action. The algorithm
 can be represented in the figure below.
 
-![DQN](https://github.com/lucasbsimao/DQN-simVSSS/tree/master/images/nature_dqn.jpg "DQN")
+![DQN](https://github.com/lucasbsimao/DQN-simVSSS/blob/master/images/nature_dqn.jpg "DQN")
 
 The results achieved by the algorithm are very impressive, and the rank comparing both human level and DQN precision are the follows:
 
-![DQN-rank](https://github.com/lucasbsimao/DQN-simVSSS/tree/master/images/rank_dqn_nature.jpg "DQN-rank")
+![DQN-rank](https://github.com/lucasbsimao/DQN-simVSSS/blob/master/images/rank_dqn_nature.jpg "DQN-rank")
 
 ## simVSSS and DQN
 
