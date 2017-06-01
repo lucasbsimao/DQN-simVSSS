@@ -23,17 +23,17 @@ method, but for the reasons given above only the MLP will achive good results in
 
 | Algorithm        | Representation   |
 | ------------- |:-------------:| 
-| CNN      | ![DQN-CNN](https://github.com/lucasbsimao/DQN-simVSSS/tree/master/images/dqn-cnn.png "DQN-CNN") |
-| MLP      | ![DQN-MLP](https://github.com/lucasbsimao/DQN-simVSSS/tree/master/images/dqn-mlp.png "DQN-MLP")      |
+| CNN      | ![DQN-CNN](https://github.com/lucasbsimao/DQN-simVSSS/blob/master/images/dqn-cnn.png "DQN-CNN") |
+| MLP      | ![DQN-MLP](https://github.com/lucasbsimao/DQN-simVSSS/blob/master/images/dqn-mlp.png "DQN-MLP")      |
 
 ## Results
 
 The results with the MLP algoritm was quite reasonable. But it is dificult to see this algorihms implemented for real games in short future.
 The loss show us that the problem converges.
 
-[DQN-COST](https://github.com/lucasbsimao/DQN-simVSSS/tree/master/images/cost.png "DQN-COST")
+![DQN-COST](https://github.com/lucasbsimao/DQN-simVSSS/blob/master/images/cost.png "DQN-COST")
 
 And the path plotted by the agent confirms the prediction.
 
-[DQN-MAP](https://github.com/lucasbsimao/DQN-simVSSS/tree/master/images/init_map.png "DQN-MAP")
-[DQN-FINAL](https://github.com/lucasbsimao/DQN-simVSSS/tree/master/images/final_map.png "DQN-FINAL")
+![DQN-MAP](https://github.com/lucasbsimao/DQN-simVSSS/blob/master/images/init_map.png "DQN-MAP")
+![DQN-FINAL](https://github.com/lucasbsimao/DQN-simVSSS/blob/master/images/final_map.png "DQN-FINAL")
